@@ -1,7 +1,6 @@
 
 import gzip
 import csv
-from datetime import datetime
 import psycopg2
 k4=dict()
 
@@ -81,7 +80,7 @@ def load_Person_Roles():
 
 			
 			if i%10000==0:
-				print(i, "{:.2f}%".format(i/ 10194348*100))
+				print(i, "{:.2f}%".format(i/ 6600349*100))
 			
 
 
@@ -121,7 +120,7 @@ def load_title():
 				conn.commit()
 
 			if i%1000==0: 
-				print(i, "{:.2f}%".format(i/6939000*100))
+				print(i, "{:.2f}%".format(i/955153*100))
 			i+=1
 
 #load Episode table
@@ -178,7 +177,7 @@ def load_Rating():
 			cursor.execute(rating_query, dict(tid=row[0],avgRating=row[1],numVotes=row[2]))
 			conn.commit()
 			if i%1000==0:
-				print(i, "{:.2f}%".format(i/1050000*100))
+				print(i, "{:.2f}%".format(i/395750*100))
 			
 
 def load_principals():
