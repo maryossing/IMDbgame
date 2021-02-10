@@ -31,7 +31,7 @@ def get_k4(ID):
 			titles.append(results[0])
 	return titles
 def get_title_id(title,year,genres):
-	title_id_query ="SELECT id FROM smaller_title where primaryTitle=%(title)s AND year=%(year)s AND genres=%(genres)s "
+	title_id_query ="SELECT id FROM Title where primaryTitle=%(title)s AND year=%(year)s AND genres=%(genres)s "
 	with conn.cursor() as cursor:
 		cursor.execute(title_id_query,dict(title=title, year=year,genres=genres))
 		return cursor.fetchall()[0][0]
@@ -56,15 +56,15 @@ def get_writer(ID):
 		return res;
 
 def get_highest_rated_movie(ID):
-	movie_query="SELECT primaryTitle from Person,smaller_title,Principals,rating where person.id=%(ID)s AND person_id=person.id AND principals.title_id=smaller_title.id and rating.title_id=smaller_title.id AND type='movie' AND numvotes>5000 ORDER BY avgrating desc LIMIT 3"
+	movie_query="SELECT primaryTitle,year,avgrating from Person,Title,Principals,rating where person.id=%(ID)s AND person_id=person.id AND principals.title_id=Title.id and rating.title_id=Title.id AND type='movie' AND numvotes>5000 ORDER BY avgrating desc,primaryTitle LIMIT 1"
 	with conn.cursor() as cursor:
 		cursor.execute(movie_query,dict(ID=ID))
-		res=cursor.fetchall()[0][0]
+		res=cursor.fetchall()[0]
 		
 		return res;
 
 def get_movie_together(ID1,ID2):
-	movie_query="SELECT primaryTitle FROM smaller_title,(SELECT title_id FROM Principals, smaller_title WHERE title_id=id AND person_id=%(ID1)s and type='movie') AS person1movies,(SELECT title_id FROM Principals, smaller_title WHERE title_id=id AND person_id=%(ID2)s and type='movie')as person2movies where id=person1movies.title_id and person1movies.title_id=person2movies.title_id "
+	movie_query="SELECT primaryTitle,year FROM Title,(SELECT title_id FROM Principals, Title WHERE title_id=id AND person_id=%(ID1)s and type='movie') AS person1movies,(SELECT title_id FROM Principals, Title WHERE title_id=id AND person_id=%(ID2)s and type='movie')as person2movies where id=person1movies.title_id and person1movies.title_id=person2movies.title_id "
 	with conn.cursor() as cursor:
 		cursor.execute(movie_query,dict(ID1=ID1,ID2=ID2))
 		res=cursor.fetchall()
@@ -72,10 +72,9 @@ def get_movie_together(ID1,ID2):
 		return res;
 
 def get_actor_top250(ID):
-	movie_query="SELECT primaryTitle FROM top_250_movies,principals where principals.title_id=top_250_movies.title_id and person_id=%(ID)s"
+	movie_query="SELECT primaryTitle,year FROM top_250_movies,principals where principals.title_id=top_250_movies.title_id and person_id=%(ID)s"
 	with conn.cursor() as cursor:
 		cursor.execute(movie_query,dict(ID=ID))
 		res=cursor.fetchall()
-		print(res)
 		return res;
 
