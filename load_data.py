@@ -25,7 +25,7 @@ def load_Person_Roles():
 	roles_query="INSERT INTO Roles(person_id, role1,role2,role3) VALUES (%(id)s, %(r1)s,%(r2)s,%(r3)s)"
 	id_query="SELECT id from Person where name=%(name)s and (birthYear IS NULL or birthYear=%(birth)s)"
 	known4_query="INSERT INTO KnownFor(person_id, title1,title2,title3,title4) VALUES (%(id)s, %(t1)s,%(t2)s,%(t3)s,%(t4)s)"
-	title_query="SELECT * FROM smaller_title Where id=%(tid)s"
+	title_query="SELECT * FROM Title Where id=%(tid)s"
 	principals_query='SELECT * FROM principals WHERE person_id=%(id)s'
 	i=0;
 	with gzip.open('datasets/name.basics.tsv.gz', 'rt') as f:
@@ -39,13 +39,10 @@ def load_Person_Roles():
 			if row[2]!=None and row[3]!=None and row[3]<row[2]:
 				print(row)
 				continue
+			#if no known 4, skip
+			if row[5]==None:
+				continue
 
-
-
-
-
-	
-			
 			#get list of known4
 			known4=row[5].split(",")
 			
@@ -67,11 +64,13 @@ def load_Person_Roles():
 			res=cursor.fetchall()
 			if known4.count(None)==4 and len(res)==0:
 				continue
+			cursor.execute(person_query, dict(id=row[0],name=row[1], birth=row[2],death=row[3]))
+			conn.commit()
+            
 			cursor.execute(known4_query, dict(id=row[0], t1=known4[0],t2=known4[1],t3=known4[2],t4=known4[3]))
 			conn.commit()
 			
-			cursor.execute(person_query, dict(id=row[0],name=row[1], birth=row[2],death=row[3]))
-			conn.commit()
+			
 
 			#get list of roles
 			roles=row[4].split(",")
@@ -88,7 +87,7 @@ def load_Person_Roles():
 
 #fills titles, movies,tvseries tables
 def load_title():
-	title_query="INSERT INTO Title(id,PrimaryTitle,origTitle,type,isAdult,genres,runtime) VALUES (%(id)s,%(ptitle)s,%(otitle)s,%(type)s,%(isAdult)s,%(genres)s,%(runtime)s)"
+	title_query="INSERT INTO Title(id,PrimaryTitle,origTitle,type,genres,runtime,year) VALUES (%(id)s,%(ptitle)s,%(otitle)s,%(type)s,%(genres)s,%(runtime)s,%(year)s)"
 	movie_query="INSERT INTO Movie(title_id,year) VALUES (%(titleid)s,%(year)s)"
 	tvseries_query="INSERT INTO TVSeries(title_id, startYear,endYear) VALUES (%(titleid)s,%(start)s,%(endy)s)"
 	with gzip.open('datasets/title.basics.tsv.gz','rt') as f:
@@ -97,7 +96,9 @@ def load_title():
 		i=1
 		for row in reader:
 			row=fill_nulls(row)
-			if row[4]=='1':
+			type_=row[1].lower()
+            #if adult
+			if row[4]=='1' or (type_!="movie" and type_!="tvminiseries" and  type_!="tvmovie" and  type_!="tvseries" and  type_!="tvspecial"):
 				continue
 			# for the few titles where the Primary and Original titles were not split at '\t'
 			# manually split them
@@ -108,7 +109,7 @@ def load_title():
 				print(row)
 				
 				
-			cursor.execute(title_query,dict(id=row[0],ptitle=row[2],otitle=row[3],type=row[1],isAdult=row[4],genres=row[8],runtime=row[7]))
+			cursor.execute(title_query,dict(id=row[0],ptitle=row[2],otitle=row[3],type=row[1],genres=row[8],runtime=row[7],year=row[5]))
 			conn.commit()
 			#if title is a movie add to movie table
 			if row[1].lower()=="movie"or row[1].lower()=="tvmovie":
@@ -124,62 +125,65 @@ def load_title():
 			i+=1
 
 #load Episode table
-def load_Episode():
-	episode_query="INSERT INTO Episode(series_id,eptitle_id,season,episodeNum) VALUES (%(sid)s,%(tid)s,%(season)s,%(episodeNum)s)"
-	show_query="SELECT title_id FROM TVSeries Where title_id=%(sid)s"
-	title_query="SELECT * FROM Title Where id=%(sid)s"
-	with gzip.open('datasets/title.episode.tsv.gz', 'rt') as f:
-		reader= csv.reader(f,delimiter='\t')
-		first = next(reader)
-		i=1
-		for row in reader:
-			row=fill_nulls(row)
-			
-			cursor.execute(show_query,dict(sid=row[1]))
-			res=cursor.fetchall()
-			#if parent title(tv show) is not in title table, print and continue
-			if len(res)==0:
-				print(row)
-				cursor.execute(title_query,dict(sid=row[0]))
-				res=cursor.fetchall()
-				print(res)
-				cursor.execute(title_query,dict(sid=row[1]))
-				res=cursor.fetchall()
-				print(res)
-				continue
+# def load_Episode():
+# 	episode_query="INSERT INTO Episode(series_id,eptitle_id,season,episodeNum) VALUES (%(sid)s,%(tid)s,%(season)s,%(episodeNum)s)"
+# 	show_query="SELECT title_id FROM TVSeries Where title_id=%(sid)s"
+# 	title_query="SELECT * FROM Title Where id=%(sid)s"
+# 	with gzip.open('datasets/title.episode.tsv.gz', 'rt') as f:
+# 		reader= csv.reader(f,delimiter='\t')
+# 		first = next(reader)
+# 		i=1
+# 		for row in reader:
+# 			row=fill_nulls(row)
+# 			
+# 			cursor.execute(show_query,dict(sid=row[1]))
+# 			res=cursor.fetchall()
+# 			#if parent title(tv show) is not in title table, print and continue
+# 			if len(res)==0:
+# 				print(row)
+# 				cursor.execute(title_query,dict(sid=row[0]))
+# 				res=cursor.fetchall()
+# 				print(res)
+# 				cursor.execute(title_query,dict(sid=row[1]))
+# 				res=cursor.fetchall()
+# 				print(res)
+# 				continue
 
 
-			cursor.execute(episode_query, dict(sid=row[1],tid=row[0],season=row[2],episodeNum=row[3]))
-			conn.commit()
+# 			cursor.execute(episode_query, dict(sid=row[1],tid=row[0],season=row[2],episodeNum=row[3]))
+# 			conn.commit()
 
-			if i%1000==0:
-				print(i, "{:.2f}%".format(i/4959000*100)) 
-			i+=1
+#  			if i%1000==0:
+#  				print(i, "{:.2f}%".format(i/4959000*100)) 
+#  			i+=1
 
 #load Rating table
 def load_Rating():
 	rating_query="INSERT INTO Rating(title_id,avgRating,numVotes) VALUES (%(tid)s,%(avgRating)s,%(numVotes)s)"
 	title_query="SELECT id FROM Title Where id=%(tid)s"
+    
 	with gzip.open('datasets/title.ratings.tsv.gz', 'rt') as f:
 		reader= csv.reader(f,delimiter='\t')
 		first = next(reader)
 		i=1
 		for row in reader:
+			i+=1
 			row=fill_nulls(row)
-			# cursor.execute(title_query,dict(tid=row[0]))
-			# res=cursor.fetchall()
-			# if len(res)==0:
-			# 	print (row)
+			cursor.execute(title_query,dict(tid=row[0]))
+			res=cursor.fetchall()
+			if len(res)==0:
+				continue
+			
 				
 			cursor.execute(rating_query, dict(tid=row[0],avgRating=row[1],numVotes=row[2]))
 			conn.commit()
 			if i%1000==0:
 				print(i, "{:.2f}%".format(i/1050000*100))
-			i+=1
+			
 
 def load_principals():
 	principals_query="INSERT INTO Principals(title_id,ordering,person_id,category, job,charName) VALUES (%(tid)s,%(ordering)s,%(pid)s,%(cat)s,%(job)s,%(charName)s)"
-	title_query="SELECT id FROM smaller_title Where id=%(tid)s"
+	title_query="SELECT id FROM Title Where id=%(tid)s"
 	person_query="SELECT id FROM Person Where id=%(pid)s"
 
 	with gzip.open('datasets/title.principals.tsv.gz', 'rt') as f:
@@ -188,12 +192,8 @@ def load_principals():
 		i=0
 		for row in reader:
 			i+=1
-			if row[0]<'tt7683858':
-				
-				continue
-			elif row[0]=='tt7683858' and row[1]<='4':
-				continue
-			
+		
+
 			row=fill_nulls(row)
 			cursor.execute(title_query,dict(tid=row[0]))
 			res=cursor.fetchall()
@@ -206,67 +206,40 @@ def load_principals():
 			if len(res)==0:
 
 				continue
+			if row[4]!=None:
+				row[4]=row[4][:min(255,len(row[4]))]
 				
 			cursor.execute(principals_query, dict(tid=row[0],ordering=row[1],pid=row[2],cat=row[3],job=row[4],charName=row[5]))
 			conn.commit()
 			if i%10000==0:
 				print(i, "{:.2f}%".format(i/39720000*100))
-def removeAdult():
-	delete_title="DELETE FROM Title WHERE id=%(tid)s"
-	with gzip.open('datasets/title.basics.tsv.gz','rt') as f:
-		reader= csv.reader(f,delimiter='\t')
-		first = next(reader)
-		i=1
-		j=1
-		for row in reader:
-			if i<=904294:
-				i+=1
-				continue
-			row=fill_nulls(row)
 
-			# for the few titles where the Primary and Original titles were not split at '\t'
-			# manually split them
-			if len(row)!=9:
-				
-				row.insert(3,row[2][row[2].index('\t')+1:])
-				row[2]=row[2][0:row[2].index('\t')]
-				
-			if row[4]=='1':
-				cursor.execute(delete_title,dict(tid=row[0]))
-				conn.commit()
-				print("Deleted title")
-				print(i,j)
-				print(j, "{:.2f}%% deleted".format(j/192516*100))
-				
-				j+=1
-			if i%10000==0:
-				print(i, "{:.2f}%% of total titles".format(i/6918689*100))
-				print(j, "{:.2f}%% deleted".format(j/192516*100))	
-			i+=1
-			
 
 
 
 def main():
 	print("Creating Schema")
-	# cursor.execute(open("schema.sql", "r").read())
-	# conn.commit()
-	
+	cursor.execute(open("schema.sql", "r").read())
+	conn.commit()
+
 
 	print("Loading Title,Movie,TV table")
-	#load_title()
+	load_title()
 	print("Loading Person, Roles, and KnownFor tables") 
 	load_Person_Roles()
 	print("Person and Roles tables loaded")
 	
 
 
-	print("Loading Episodes")
+	# print("Loading Episodes")
 	# load_Episode()
 	print("Loading Ratings")
-	# load_Rating()
+	load_Rating()
+	print("Loading Principals")
+	load_principals()
+	cursor.execute(open("view.sql", "r").read())
+	conn.commit()
 
-	#load_principals()
-	# removeAdult()
+	
 if __name__ == '__main__':
 	main();
