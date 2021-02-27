@@ -9,9 +9,8 @@ def get_person_info(name):
 	with conn.cursor() as cursor:
 		cursor.execute(name_query,dict(inputname=name))
 		res=cursor.fetchall()
-
-
 		return res
+		
 def get_person_info_ilike(name):
 	name_query="SELECT name,id,role1,role2,role3 FROM Person,Roles WHERE name ILIKE %(inputname)s AND person_id=id  ORDER BY credits desc LIMIT 3"
 	with conn.cursor() as cursor:
