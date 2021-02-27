@@ -13,11 +13,21 @@ and search the database to perform different fuctions such as:
     Highest rated film: ask the user for a name and print the film IMDb lists as their highest rated
     Top 250: ask the user for a name and print out the titles of the films (if any) that the person appeared in that IMDb lists as being in the Top 250 films of all time
 ## Getting Started
-    Python3.7 or later required, with psycopg2, wget, gzip, csv packages installed
-    PostgreSQL 12.1 required
+ Python3.7 or later required with `psycopg2`, `wget`, `gzip`, and `csv` packages installed
+ PostgreSQL 12.1 required
+ To get started with the project, users will need to run, from the terminal (or command prompt) in the `IMDbgame` directory, the command:
+  ```
+  python3.7 retrieve_data.py
+  ```
+ Then in postgres sql users should run the commands found in `database-setup.sql` in order to create the database and user.
+ Then from the terminal in the `IMDbgame\code` folder users will need to run 
+ ```
+  python3.7 load_data.py
+ ```
+  
 ## Executing Program
-    To get started with the project, users will need to run retrieve_data.py and load_data.py to create and populate the database, then run application.py to use the app
-    in linux shell in directory where retrieve_data.py and db-setup.sql are located run 'python3.7 retrieve_data.py'
-    in the separate 'code' folder, run 'python3.7 load_data.py'
-    then run 'python3.7 application.py' to run the application
-    
+ To get started with the application, users will need to run, from the a terminal (or command prompt) in the `IMDbgame\code` directory, the command:
+  ```
+  python3.7 application.py
+  ```
+
