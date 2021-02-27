@@ -26,12 +26,11 @@ def load_Person_Roles():
 	known4_query="INSERT INTO KnownFor(person_id, title1,title2,title3,title4) VALUES (%(id)s, %(t1)s,%(t2)s,%(t3)s,%(t4)s)"
 	title_query="SELECT * FROM Title Where id=%(tid)s"
 	principals_query='SELECT * FROM principals WHERE person_id=%(id)s'
-	i=0;
-	with gzip.open('datasets/name.basics.tsv.gz', 'rt') as f:
+	i=1;
+	with gzip.open('datasets/name.basics.tsv.gz', 'rt',encoding="utf-8") as f:
 		reader= csv.reader(f,delimiter='\t')
 		first = next(reader)
 		for row in reader:
-			i+=1
 			#fill empty values with None
 			row=fill_nulls(row)
 			#if person died before they were born, skip
@@ -81,6 +80,7 @@ def load_Person_Roles():
 			
 			if i%10000==0:
 				print(i, "{:.2f}%".format(i/ 6600349*100))
+			i+=1
 			
 
 
@@ -89,7 +89,7 @@ def load_title():
 	title_query="INSERT INTO Title(id,PrimaryTitle,origTitle,type,genres,runtime,year) VALUES (%(id)s,%(ptitle)s,%(otitle)s,%(type)s,%(genres)s,%(runtime)s,%(year)s)"
 	movie_query="INSERT INTO Movie(title_id,year) VALUES (%(titleid)s,%(year)s)"
 	tvseries_query="INSERT INTO TVSeries(title_id, startYear,endYear) VALUES (%(titleid)s,%(start)s,%(endy)s)"
-	with gzip.open('datasets/title.basics.tsv.gz','rt') as f:
+	with gzip.open('datasets/title.basics.tsv.gz','rt',encoding="utf-8") as f:
 		reader= csv.reader(f,delimiter='\t')
 		first = next(reader)
 		i=1
@@ -119,7 +119,7 @@ def load_title():
 				cursor.execute(tvseries_query, dict(titleid=row[0],start=row[5],endy=row[6]))
 				conn.commit()
 
-			if i%1000==0: 
+			if i%10000==0: 
 				print(i, "{:.2f}%".format(i/955153*100))
 			i+=1
 
@@ -128,7 +128,7 @@ def load_title():
 # 	episode_query="INSERT INTO Episode(series_id,eptitle_id,season,episodeNum) VALUES (%(sid)s,%(tid)s,%(season)s,%(episodeNum)s)"
 # 	show_query="SELECT title_id FROM TVSeries Where title_id=%(sid)s"
 # 	title_query="SELECT * FROM Title Where id=%(sid)s"
-# 	with gzip.open('datasets/title.episode.tsv.gz', 'rt') as f:
+# 	with gzip.open('datasets/title.episode.tsv.gz', 'rt',encoding="utf-8") as f:
 # 		reader= csv.reader(f,delimiter='\t')
 # 		first = next(reader)
 # 		i=1
@@ -161,12 +161,11 @@ def load_Rating():
 	rating_query="INSERT INTO Rating(title_id,avgRating,numVotes) VALUES (%(tid)s,%(avgRating)s,%(numVotes)s)"
 	title_query="SELECT id FROM Title Where id=%(tid)s"
     
-	with gzip.open('datasets/title.ratings.tsv.gz', 'rt') as f:
+	with gzip.open('datasets/title.ratings.tsv.gz', 'rt',encoding="utf-8") as f:
 		reader= csv.reader(f,delimiter='\t')
 		first = next(reader)
 		i=1
 		for row in reader:
-			i+=1
 			row=fill_nulls(row)
 			cursor.execute(title_query,dict(tid=row[0]))
 			res=cursor.fetchall()
@@ -176,8 +175,9 @@ def load_Rating():
 				
 			cursor.execute(rating_query, dict(tid=row[0],avgRating=row[1],numVotes=row[2]))
 			conn.commit()
-			if i%1000==0:
+			if i%10000==0:
 				print(i, "{:.2f}%".format(i/395750*100))
+			i+=1
 			
 
 def load_principals():
@@ -185,12 +185,11 @@ def load_principals():
 	title_query="SELECT id FROM Title Where id=%(tid)s"
 	person_query="SELECT id FROM Person Where id=%(pid)s"
 
-	with gzip.open('datasets/title.principals.tsv.gz', 'rt') as f:
+	with gzip.open('datasets/title.principals.tsv.gz', 'rt',encoding="utf-8") as f:
 		reader= csv.reader(f,delimiter='\t')
 		first = next(reader)
-		i=0
+		i=1
 		for row in reader:
-			i+=1
 		
 
 			row=fill_nulls(row)
@@ -212,6 +211,7 @@ def load_principals():
 			conn.commit()
 			if i%10000==0:
 				print(i, "{:.2f}%".format(i/39720000*100))
+			i+=1
 
 
 
