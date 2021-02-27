@@ -1,10 +1,10 @@
 # IMDbgame
 
-   Python application that uses PostGres SQL to download IMDb data, create SQL database,
+   Python application that uses PostgreSQL to download IMDb data, create SQL database,
 and search the database to perform different functions for given user input names
 
 ## Description
-Python application that uses PostGres SQL to download IMDb data, create SQL database,
+Python application that uses PostgreSQL to download IMDb data, create SQL database,
 and search the database to perform different functions such as:
     IMDb game: ask user for a name of an actor/writer/director,
                 use database to find what four movies IMDb lists as an actor/writer/director's most known films,  
@@ -20,7 +20,7 @@ and search the database to perform different functions such as:
   python3.7 retrieve_data.py
   ```
  which will create a `datasets` folder in the `code` folder and download the data from [IMDb](https://www.imdb.com/interfaces/) into `datasets/code`.
- Then, in PostGres SQL, users should run the commands found in `database-setup.sql` in order to create the database and user.
+ Then, in PostgreSQL, users should run the commands found in `database-setup.sql` in order to create the database and user.
  Then from the terminal in the `IMDbgame/code` folder users will need to run
  ```
   python3.7 load_data.py
