@@ -4,7 +4,7 @@ import time
 
 def remove_articles(correct,given):
     """
-    Removes starting articles ('the', 'a','an') 
+    Removes starting articles ('the', 'a','an')
     from correct title if given title does not have them
 
     ie; remove_articles("the godfather","godfather") returns 'godfather'
@@ -16,7 +16,7 @@ def remove_articles(correct,given):
            full correct title of a film
     given : string
         input title to be compared to correct
-        
+
     Returns
     -------
     correct : string
@@ -27,7 +27,7 @@ def remove_articles(correct,given):
     if correct.startswith('the ') and not given.startswith('the '):
         correct=correct[4:]
     if correct.startswith('an ') and not given.startswith('an '):
-        correct=correct[3:] 
+        correct=correct[3:]
     if correct.startswith('a ') and not given.startswith('a '):
         correct=correct[2:]
     return correct
@@ -51,15 +51,15 @@ def count_differences(correct,given):
 
     Returns
     -------
-    word_diffs : list 
+    word_diffs : list
         list of numbers of letter differences
          between each word in correct and given
 
     """
-    
+
     #create list of lengths of each word in correct title
     correct_words=[len(word) for word in correct.split(' ')]
-    
+
     #create list of number of words in correct
     #to keep track of number of letter differences in each word
     word_diffs=[0]*len(correct_words)
@@ -84,7 +84,7 @@ def count_differences(correct,given):
             if gword<len(given.split(' ')):
                 gword+=1
             continue
-        #if given is shorter than correct, 
+        #if given is shorter than correct,
         # fill the entries in word_diffs for the remaining words with the lengths of the remaining letters
         if gl>=len(given):
             #count remaining letters in current word
@@ -115,15 +115,15 @@ def count_differences(correct,given):
         #count remaining letters in given word
         for i in  range(gl,len(given)):
             if given[i]!=' ':
-            
+
                 word_diffs[cword]+=1
-        
+
     return word_diffs
 
 
 def longWords(correct):
     """
-    
+
 
     Parameters
     ----------
@@ -132,7 +132,7 @@ def longWords(correct):
 
     Returns
     -------
-    words : list 
+    words : list
         sorted list of strings of each word with 3+ letters in the title.
 
     """
@@ -142,9 +142,9 @@ def longWords(correct):
     return words
 
 
-def close_enough(correct, given): 
+def close_enough(correct, given):
     """
-    compare input title to correct title and determines if 
+    compare input title to correct title and determines if
     there is a significant enough amount of incorrect letters to reject
 
     Parameters
@@ -158,7 +158,7 @@ def close_enough(correct, given):
     Returns
     -------
     bool
-        true if very few incorrect letters in given title 
+        true if very few incorrect letters in given title
         when compared to correct title. false otherwise
 
     """
@@ -168,11 +168,11 @@ def close_enough(correct, given):
     #if 3+ extra letters in given
     if len(given)>len(correct)+2:
         return False
-    
+
     wordcount=correct.count(' ')+1
     word_diffs=count_differences(correct,given)
     long_words=longWords(correct)
-    print(word_diffs)
+
     #if less than 4 total letter differences
     if sum(word_diffs)<4:
         return True
@@ -207,12 +207,12 @@ def check_guess(title, remaining_titles):
         remaining_titles.pop(title)
         return True
     for correct_title in remaining_titles:
-        
+
         if close_enough(correct_title,title):
             print_box(["{} ({}) is Correct!".format(remaining_titles[correct_title][2],remaining_titles[correct_title][0])],'-')
             remaining_titles.pop(correct_title)
             return True
-            
+
     print_box([title+' is Incorrect'],'x')
     return False
 
@@ -244,8 +244,8 @@ def print_box(lines,char):
         print('|'+"\t",lines[i],((max_len-11-len(lines[i]))*' ')+'|')
     print('|'+((max_len-2)*' ')+'|'+'\n'+(char*max_len))
     print()
-    
-    
+
+
 def get_hint(remaining_titles,letter_count):
     """
     asks user for choice of hint (genre, director, letters) and prints choice
@@ -272,11 +272,11 @@ def get_hint(remaining_titles,letter_count):
         lines=[remaining_titles[title][1] for title in remaining_titles ]
         lines.insert(0,"The genres of the remaining titles are:")
         print_box(lines,'*')
-    
+
     elif hint=='2' or hint=='directors':
         ids=[get_title_id(remaining_titles[title][2],remaining_titles[title][0],remaining_titles[title][1]) for title in remaining_titles ]
         lines=[get_director(ID) for ID in ids]
-        
+
         lines.insert(0,"The directors of the remaining titles are:")
         print_box(lines,"*")
     elif hint=='3' or hint=='title letters':
@@ -309,14 +309,14 @@ def game(name,ID):
 
     """
     titles=get_k4(ID)
-    
+
     remaining_titles=dict()
     numTV=0
     animation=0
     for title in titles:
         #[year, genres, Primarytitle]
         remaining_titles[title[2].lower()]=[title[4],title[5],title[2]]
-        
+
         if title[3].count('tv')>0:
             numTV+=1
         if title[5].count('Animation'):
@@ -330,8 +330,8 @@ def game(name,ID):
         print('\n    {} Titles are Animation\n'.format(animation))
     if numTV>0:
         print('\n    {} Titles are TV Shows\n'.format(numTV))
-    print("\tAfter 2 wrong guesses, the remaining Titles's years will be revealed\n")
-    print("\t\tLet's Begin!\n")
+    print("After 2 wrong guesses, the remaining Titles's years will be revealed\n")
+    print("\tLet's Begin!\n")
     correct_count=0
     wrong_count=0
     letter_count=1
@@ -348,9 +348,9 @@ def game(name,ID):
 
         #print hint
         if guess == 'hint':
-            
+
             letter_count =get_hint(remaining_titles,letter_count)
-            
+
 
         elif guess=='give up':
             print('\nA remaining title is: ')
@@ -373,25 +373,27 @@ def game(name,ID):
     print("{}'s Known 4 are:".format(name))
     for title in titles:
         print("\t{} ({})".format(title[2],title[4]))
-
+    time.sleep(1)
     print()
     print_box(["Your Score: {} Correct Guesses and {} Wrong Guesses".format(correct_count,wrong_count)],'+')
     if wrong_count==0 and correct_count==len(titles):
         print("A Perfect Score!!\n")
+    time.sleep(1)
+    print("-"*70)
 
 def input_name():
     name=input(" => ")
     name=name.strip().lower().title()
     print('\nSearching...\n')
-    
+
 
     if name.split(' ')[1].startswith('Mc'):
-        name= name.index(' ')
+
         results=get_person_info_ilike(name)
     else:
         results=get_person_info(name)
-    
-    
+
+
 
     if len(results)>1:
         print("Multiple Names Matched Your Input:")
@@ -400,7 +402,7 @@ def input_name():
             print('\t'+str(i+1)+'. '+ results[i][0]+' ('+results[i][2],end='')
             j=3
             while j< len(results[i]) and results[i][j]!=None:
-                print(', '+results[i][j],end='')
+                print(', '+str(results[i][j]),end='')
                 j+=1
             print(')')
         valid=False
@@ -428,7 +430,7 @@ def best_movie(name,ID):
 
 
 def movie_together(ID1,ID2):
-    
+
     movies=get_movie_together(ID1,ID2)
     name1=get_name(ID1)
     name2=get_name(ID2)
@@ -463,14 +465,14 @@ def actor_top250(name,ID):
     else:
         lines=[]
         lines.append("{} was in {:d} of IMDb's top 250 films".format(name,len(movies)))
-        
+
         for mov in movies:
             lines.append("{} ({})".format(mov[0],mov[1]))
         print_box(lines, "+")
     print()
-    
+
 def driver():
-    
+
 
     print("What do you want to do?")
     print("\t1. Play Game")
@@ -483,8 +485,8 @@ def driver():
     choice=input("Choice => ").strip()
     if not choice.isdigit() or int(choice)<1 or int(choice)>5:
         print("Invalid Choice. Try Again")
-        driver()
-        return
+
+        return driver()
     choice=int(choice)
     if choice==1:
         print_box(["Welcome to the IMDb Game!"],"%")
@@ -505,7 +507,7 @@ def driver():
         print("\n   To begin choose a name",end='')
         name,ID=input_name()
         actor_top250(name,ID)
-       
+
     else:
         return False
     return True
@@ -516,5 +518,3 @@ if __name__ == '__main__':
     res=driver()
     while res:
         res=driver()
-
-
