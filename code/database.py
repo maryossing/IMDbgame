@@ -68,7 +68,7 @@ def get_highest_rated_movie(ID):
 		return res;
 
 def get_movie_together(ID1,ID2):
-	movie_query="SELECT primaryTitle,year FROM Title,(SELECT title_id FROM Principals, Title WHERE title_id=id AND person_id=%(ID1)s and type ILIKE '%%movie') AS person1movies,(SELECT title_id FROM Principals, Title WHERE title_id=id AND person_id=%(ID2)s and type ILIKE '%%movie')as person2movies where id=person1movies.title_id and person1movies.title_id=person2movies.title_id "
+	movie_query="SELECT primaryTitle,year FROM Title,(SELECT title_id FROM Principals, Title WHERE title_id=id AND person_id=%(ID1)s and type = 'movie') AS person1movies,(SELECT title_id FROM Principals, Title WHERE title_id=id AND person_id=%(ID2)s and type = 'movie')as person2movies where id=person1movies.title_id and person1movies.title_id=person2movies.title_id "
 	with conn.cursor() as cursor:
 		cursor.execute(movie_query,dict(ID1=ID1,ID2=ID2))
 		res=cursor.fetchall()
