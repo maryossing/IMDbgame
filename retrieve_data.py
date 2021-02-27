@@ -6,7 +6,7 @@ from shutil import rmtree
 with open('code/datasets.txt') as datasets_file:
 	urls = datasets_file.readlines()
 
-	
+
 	rmtree('code/datasets', ignore_errors=True)
 	mkdir('code/datasets')
 
@@ -14,5 +14,3 @@ with open('code/datasets.txt') as datasets_file:
 		print(u)
 		f = wget.download(u.rstrip(), 'code/datasets/')
 		print(f)
-
-
