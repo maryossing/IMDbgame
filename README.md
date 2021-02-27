@@ -19,11 +19,13 @@ and search the database to perform different fuctions such as:
   ```
   python3.7 retrieve_data.py
   ```
- Then in postgres sql users should run the commands found in `database-setup.sql` in order to create the database and user.
+ which will create a `datasets` folder in the `code` folder and download the data from [IMDb](https://www.imdb.com/interfaces/) into `datasets\code`.
+ Then, in PostGres SQL, users should run the commands found in `database-setup.sql` in order to create the database and user.
  Then from the terminal in the `IMDbgame\code` folder users will need to run 
  ```
   python3.7 load_data.py
  ```
+ which will populate the tables in the IMDbdata SQL database.
   
 ## Executing Program
  To get started with the application, users will need to run, from the a terminal (or command prompt) in the `IMDbgame\code` directory, the command:
