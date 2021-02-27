@@ -20,17 +20,16 @@ def fill_nulls(row):
 #load Person, Roles, KnownFor tables
 def load_Person_Roles():
 
-	person_query = "INSERT INTO Person (id,name,birthYear,deathYear) VALUES (%(id)s,%(name)s, %(birth)s,%(death)s) ON CONFLICT DO NOTHING"
+	person_query = "INSERT INTO Person (id,name,birthYear,deathYear,credits) VALUES (%(id)s,%(name)s, %(birth)s,%(death)s,0) ON CONFLICT DO NOTHING"
 	roles_query="INSERT INTO Roles(person_id, role1,role2,role3) VALUES (%(id)s, %(r1)s,%(r2)s,%(r3)s)"
-	id_query="SELECT id from Person where name=%(name)s and (birthYear IS NULL or birthYear=%(birth)s)"
 	known4_query="INSERT INTO KnownFor(person_id, title1,title2,title3,title4) VALUES (%(id)s, %(t1)s,%(t2)s,%(t3)s,%(t4)s)"
 	title_query="SELECT * FROM Title Where id=%(tid)s"
-	principals_query='SELECT * FROM principals WHERE person_id=%(id)s'
 	i=1;
 	with gzip.open('datasets/name.basics.tsv.gz', 'rt',encoding="utf-8") as f:
 		reader= csv.reader(f,delimiter='\t')
 		first = next(reader)
 		for row in reader:
+
 			#fill empty values with None
 			row=fill_nulls(row)
 			#if person died before they were born, skip
@@ -43,7 +42,7 @@ def load_Person_Roles():
 
 			#get list of known4
 			known4=row[5].split(",")
-			
+
 			# fill with None until there are 4 values
 			while len(known4)<4:
 				known4.append(None)
@@ -58,17 +57,16 @@ def load_Person_Roles():
 				if len(res)==0:
 					known4[j]=None
 				j+=1
-			cursor.execute(principals_query,dict(id=row[0]))
-			res=cursor.fetchall()
-			if known4.count(None)==4 and len(res)==0:
+
+			if known4.count(None)==4:
 				continue
 			cursor.execute(person_query, dict(id=row[0],name=row[1], birth=row[2],death=row[3]))
 			conn.commit()
-            
+
 			cursor.execute(known4_query, dict(id=row[0], t1=known4[0],t2=known4[1],t3=known4[2],t4=known4[3]))
 			conn.commit()
-			
-			
+
+
 
 			#get list of roles
 			roles=row[4].split(",")
@@ -77,11 +75,11 @@ def load_Person_Roles():
 			cursor.execute(roles_query, dict(id=row[0], r1=roles[0],r2=roles[1],r3=roles[2]))
 			conn.commit()
 
-			
+
 			if i%10000==0:
 				print(i, "{:.2f}%".format(i/ 6600349*100))
 			i+=1
-			
+
 
 
 #fills titles, movies,tvseries tables
@@ -96,6 +94,7 @@ def load_title():
 		for row in reader:
 			row=fill_nulls(row)
 			type_=row[1].lower()
+
             #if adult
 			if row[4]=='1' or (type_!="movie" and type_!="tvminiseries" and  type_!="tvmovie" and  type_!="tvseries" and  type_!="tvspecial"):
 				continue
@@ -106,8 +105,8 @@ def load_title():
 				row.insert(3,row[2][row[2].index('\t')+1:])
 				row[2]=row[2][0:row[2].index('\t')]
 				print(row)
-				
-				
+
+
 			cursor.execute(title_query,dict(id=row[0],ptitle=row[2],otitle=row[3],type=row[1],genres=row[8],runtime=row[7],year=row[5]))
 			conn.commit()
 			#if title is a movie add to movie table
@@ -119,7 +118,7 @@ def load_title():
 				cursor.execute(tvseries_query, dict(titleid=row[0],start=row[5],endy=row[6]))
 				conn.commit()
 
-			if i%10000==0: 
+			if i%10000==0:
 				print(i, "{:.2f}%".format(i/955153*100))
 			i+=1
 
@@ -134,7 +133,7 @@ def load_title():
 # 		i=1
 # 		for row in reader:
 # 			row=fill_nulls(row)
-# 			
+#
 # 			cursor.execute(show_query,dict(sid=row[1]))
 # 			res=cursor.fetchall()
 # 			#if parent title(tv show) is not in title table, print and continue
@@ -153,14 +152,14 @@ def load_title():
 # 			conn.commit()
 
 #  			if i%1000==0:
-#  				print(i, "{:.2f}%".format(i/4959000*100)) 
+#  				print(i, "{:.2f}%".format(i/4959000*100))
 #  			i+=1
 
 #load Rating table
 def load_Rating():
 	rating_query="INSERT INTO Rating(title_id,avgRating,numVotes) VALUES (%(tid)s,%(avgRating)s,%(numVotes)s)"
 	title_query="SELECT id FROM Title Where id=%(tid)s"
-    
+
 	with gzip.open('datasets/title.ratings.tsv.gz', 'rt',encoding="utf-8") as f:
 		reader= csv.reader(f,delimiter='\t')
 		first = next(reader)
@@ -171,14 +170,14 @@ def load_Rating():
 			res=cursor.fetchall()
 			if len(res)==0:
 				continue
-			
-				
+
+
 			cursor.execute(rating_query, dict(tid=row[0],avgRating=row[1],numVotes=row[2]))
 			conn.commit()
 			if i%10000==0:
 				print(i, "{:.2f}%".format(i/395750*100))
 			i+=1
-			
+
 
 def load_principals():
 	principals_query="INSERT INTO Principals(title_id,ordering,person_id,category, job,charName) VALUES (%(tid)s,%(ordering)s,%(pid)s,%(cat)s,%(job)s,%(charName)s)"
@@ -190,14 +189,14 @@ def load_principals():
 		first = next(reader)
 		i=1
 		for row in reader:
-		
+
 
 			row=fill_nulls(row)
 			cursor.execute(title_query,dict(tid=row[0]))
 			res=cursor.fetchall()
 			if len(res)==0:
 				continue
-			
+
 			cursor.execute(person_query,dict(pid=row[2]))
 
 			res=cursor.fetchall()
@@ -206,12 +205,13 @@ def load_principals():
 				continue
 			if row[4]!=None:
 				row[4]=row[4][:min(255,len(row[4]))]
-				
+
 			cursor.execute(principals_query, dict(tid=row[0],ordering=row[1],pid=row[2],cat=row[3],job=row[4],charName=row[5]))
 			conn.commit()
 			if i%10000==0:
-				print(i, "{:.2f}%".format(i/39720000*100))
+				print(i, "{:.2f}%".format(i/6270035*100))
 			i+=1
+
 
 
 
@@ -224,10 +224,10 @@ def main():
 
 	print("Loading Title,Movie,TV table")
 	load_title()
-	print("Loading Person, Roles, and KnownFor tables") 
+	print("Loading Person, Roles, and KnownFor tables")
 	load_Person_Roles()
 	print("Person and Roles tables loaded")
-	
+
 
 
 	# print("Loading Episodes")
@@ -239,6 +239,6 @@ def main():
 	cursor.execute(open("view.sql", "r").read())
 	conn.commit()
 
-	
+
 if __name__ == '__main__':
 	main();

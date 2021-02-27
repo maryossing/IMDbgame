@@ -1,6 +1,10 @@
 DROP SCHEMA IF EXISTS game CASCADE;
 CREATE SCHEMA game;
 
+DROP TRIGGER delcreditsupdt ON Principals;
+DROP TRIGGER addcreditsupdt ON Principals;
+DROP FUNCTION delcreditsupdt_fnct;
+DROP FUNCTION addcreditsupdt_fnct;
 DROP TABLE IF EXISTS Person CASCADE;
 DROP TABLE IF EXISTS Roles CASCADE;
 
@@ -73,7 +77,7 @@ CREATE TABLE TVSeries(
 	startYear INT,
 	endYear INT,
 	seasons INT,
-	
+
 	PRIMARY KEY(title_id),
 	CONSTRAINT chk_year check (startYear<=endYear AND startYear>1800)
 );
@@ -93,3 +97,34 @@ CREATE TABLE Rating(
 	PRIMARY KEY (title_id)
 );
 
+
+CREATE OR REPLACE FUNCTION addcreditsupdt_fnct()
+	RETURNS TRIGGER as
+$$
+BEGIN
+	UPDATE Person SET credits=credits+1 where NEW.person_id=person.id;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER addcreditsupdt
+AFTER INSERT
+ON Principals
+FOR EACH ROW
+EXECUTE PROCEDURE addcreditsupdt_fnct();
+
+
+CREATE OR REPLACE FUNCTION delcreditsupdt_fnct()
+	RETURNS TRIGGER as
+$$
+BEGIN
+	UPDATE Person SET credits=credits-1 where OLD.person_id=person.id;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER delcreditsupdt
+AFTER DELETE
+ON Principals
+FOR EACH ROW
+EXECUTE PROCEDURE delcreditsupdt_fnct();
