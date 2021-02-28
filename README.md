@@ -12,7 +12,7 @@ and search the database to perform different functions such as:
    - ask user to guess the titles of those films, providing hints as needed
  - Films in common: ask the user for two names and list the movies/TV shows that the two people have in common
  - Highest rated film: ask the user for a name and print the film IMDb lists as their highest rated
- - Top 250: ask the user for a name and print out the titles of the films (if any) that the person appeared in that IMDb lists as being in the Top 250 films of all time
+ - Top 250: ask the user for a name and print out the titles of the films (if any) that the person appeared in that are amoung the top 250 highest rated movies acoording to IMDb users' ratings
 ## Getting Started
  Python3.7 or later required with `psycopg2`, `wget`, `gzip`, and `csv` packages installed
  PostgreSQL 12.1 required
